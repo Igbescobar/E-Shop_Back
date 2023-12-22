@@ -1,5 +1,6 @@
 const Mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const { Schema } = Mongoose;
 
@@ -41,5 +42,21 @@ userSchema.pre("save", function (next) {
 
   next();
 });
+
+userSchema.methods.validatePassword = function (userPassword) {
+  return bcrypt.compareSync(userPassword, this.password);
+};
+
+userSchema.methods.signToken = function () {
+  const { _id, username, email, role } = this;
+  const payload = { _id, username, email, role };
+
+  const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
+    algorithm: "HS256",
+    expiresIn: "6h",
+  });
+
+  return authToken;
+};
 
 module.exports = Mongoose.model("User", userSchema);

@@ -1,30 +1,42 @@
 const userModel = require("../models/userModel");
 
-const helloThere = (req, res, next) => {
-  res.send("hello");
-};
-
-const signUp = (req, res, next) => {
-  console.log(req.body);
+const signUp = async (req, res, next) => {
   const { email, username, password } = req.body;
 
   try {
-    userModel.create({ username, email, password });
+    await userModel.create({ username, email, password });
     res.sendStatus(200);
   } catch (error) {
     next(error);
   }
 };
 
-const createUser = async (req, res) => {
+const login = async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (email === "" || password === "") {
+    res.status(400).json({ errorMessage: ["Email and password are required"] });
+  }
   try {
-    const { username, email, password } = req.body;
-    const newUser = await userModel.create({ username, email });
-  } catch (error) {}
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      res.status(401).json({ errorMessage: ["User is not registered"] });
+    }
+
+    if (user.validatePassword(password)) {
+      const authToken = user.signToken();
+
+      res.json({ authToken });
+    } else {
+      res.status(401).json({ errorMessage: ["Incorrect password"] });
+    }
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {
-  helloThere,
   signUp,
-  createUser,
+  login,
 };
