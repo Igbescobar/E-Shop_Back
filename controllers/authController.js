@@ -17,16 +17,15 @@ const login = async (req, res, next) => {
   if (email === "" || password === "") {
     res.status(400).json({ errorMessage: ["Email and password are required"] });
   }
+
   try {
     const user = await userModel.findOne({ email });
 
     if (!user) {
       res.status(401).json({ errorMessage: ["User is not registered"] });
     }
-
     if (user.validatePassword(password)) {
       const authToken = user.signToken();
-
       res.json({ authToken });
     } else {
       res.status(401).json({ errorMessage: ["Incorrect password"] });
