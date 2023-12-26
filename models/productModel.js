@@ -11,17 +11,9 @@ const options = {
 Mongoose.plugin(slug, options);
 
 const ProductSchema = new Schema({
-  sku: {
-    type: String,
-  },
   name: {
     type: String,
     trim: true,
-  },
-  slug: {
-    type: String,
-    slug: "name",
-    unique: true,
   },
   imageUrl: {
     type: String,
